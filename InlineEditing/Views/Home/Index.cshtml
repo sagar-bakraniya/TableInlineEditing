@@ -1,31 +1,97 @@
-﻿@{
+﻿@model IEnumerable<InlineEditing.Models.Employee>
+@{
     ViewBag.Title = "Home Page";
+    var grid = new WebGrid( Model );
 }
 
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
+@grid.GetHtml(
+    htmlAttributes: new { @class = "table" , @id ="table" },
+    columns:
+    grid.Columns(
+    grid.Column( header: "ID", format: @<span>
+    <label class="lbl">@item.ID</label>
+</span>, style: "id" ),
+            grid.Column( header: "Employee Name", format: @<span>
+        <span class="lbl">@item.EmpName</span>
+        <input class="text" type="text" value="@item.EmpName" style="display:none" />
+    </span>, style: "empname" ),
+            grid.Column( header: "Designation", format: @<span>
+        <label class="lbl">@item.Designation</label>
+        <input class="text" type="text" value="@item.Designation" style="display:none" />
+    </span>, style: "designation" ),
+            grid.Column( header: "Salary", format: @<span>
+        <label class="lbl">@item.Salary</label>
+        <input class="text" type="text" value="@item.Salary" style="display:none" />
+    </span>, style: "salary" ),
+             grid.Column( header: "Action", format: @<span>
+    <a href="#" class="edit">Edit</a>
+    <a href="#" onclick="myfunction('update')" class="update">Update</a>
+    <a href="#" onclick="myfunction('delete')" class="update">Delete</a>
+    <a href="#" onclick="myfunction('update')" class="cancel">Cancel</a>
+</span>, style: "class" ) ) )
 
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-    </div>
-</div>
+               )
+
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.20/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript">
+
+    $('.text ,  .update , .cancel').hide();
+
+    let table = $('.table').dataTable({
+        "searching": true
+    });
+
+    $('.cancel').click(function () {
+        var row = $(this).closest("tr");
+        $(row).find('.lbl').show();
+        $(row).find('.edit').show();
+        $(row).find('.text ,  .update , .cancel').hide();
+
+    });
+    $('.edit').click(function () {
+        var row = $(this).closest("tr");
+        $(row).find('.lbl').hide();
+        $(row).find('.lbl').hide();
+        $(row).find('.text ,  .update , .cancel').show();
+
+    });
+
+    function myfunction(methode) {
+        $("body").on("click", "#table tbody .update", function () {
+            let row = $(this).closest("tr");
+            $("td", row).each(function () {
+                if ($(this).find(".text").length > 0) {
+                    var span = $(this).find(".lbl");
+                    var input = $(this).find(".text");
+                    span.html(input.val());
+                    span.show();
+                    input.hide();
+                }
+            });
+            let employee = {};
+            employee.ID = row.find(".id").find(".lbl").html();
+            employee.EmpName = row.find(".empname").find(".lbl").html();
+            employee.Designation = row.find(".designation").find(".lbl").html();
+            employee.Salary = row.find(".salary").find(".lbl").html();
+            $(row).find('.text ,  .update , .cancel').hide();
+            row.find(".edit").show();
+            row.find(".cancel").hide();
+            $(this).hide();
+
+            $.post(methode, employee)
+                .done(() => {
+                    console.log('done');
+                })
+                .fail((e) => {
+                    console.log(e);
+                });
+
+        });
+    }
+
+   
+    
+
+</script>
